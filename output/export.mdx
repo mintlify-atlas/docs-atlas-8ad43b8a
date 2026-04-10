@@ -1,0 +1,52 @@
+---
+title: "Export and download your BACLAB pipeline results"
+description: "BACLAB automatically packages trimmed reads, QC reports, assemblies, and logs into a timestamped ZIP and triggers a browser download at the end of the run."
+---
+
+BACLAB automatically packages all pipeline results into a single ZIP archive at the end of the run and triggers a browser download from the last notebook cell. No manual file collection is required — every output folder is bundled together in one file ready to save locally.
+
+<Note>
+  The ZIP is created and downloaded automatically by the last notebook cell. You do not need to take any manual action to initiate the export.
+</Note>
+
+## ZIP file name
+
+The archive uses a timestamp-based naming convention so that consecutive runs do not overwrite each other:
+
+```text
+baclab_bacterial_pipeline_results_<timestamp>.zip
+```
+
+The timestamp is formatted as `YYYYMMDD_HHMMSS`. For example:
+
+```text
+baclab_bacterial_pipeline_results_20240315_143022.zip
+```
+
+## ZIP contents
+
+The ZIP mirrors the `/content/bacterial_pipeline_run/` directory structure exactly. It contains:
+
+- **`trimmed/`** — all trimmed FASTQ files (paired and unpaired for PE; single file for SE)
+- **`qc/`** — per-sample FastQC HTML and ZIP reports, plus `multiqc_report.html`
+- **`assembly_runs/`** — full assembler output per sample (all Unicycler or SPAdes files)
+- **`assembled_files/`** — final `SAMPLE.fasta` genome assemblies
+- **`logs/`** — per-sample trim and assembly log files
+
+## Saving to Google Drive
+
+If you need results to persist beyond the current session, copy the output directory to Google Drive before (or instead of) downloading the ZIP. Mount Drive first using the standard Colab cell, then run:
+
+```python
+import shutil
+shutil.copytree(
+    "/content/bacterial_pipeline_run",
+    "/content/drive/MyDrive/baclab_results"
+)
+```
+
+This copies the entire output tree to `My Drive/baclab_results` and keeps the same subdirectory layout. You can change the destination path to any folder within your Drive.
+
+<Warning>
+  Colab session storage is erased when the session ends or disconnects. Always download the ZIP or copy results to Google Drive before closing the notebook — data that is not saved externally will be permanently lost.
+</Warning>

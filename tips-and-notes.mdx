@@ -1,0 +1,64 @@
+---
+title: "BACLAB tips and best practices for Google Colab"
+description: "Practical advice for getting the best results from BACLAB on Google Colab's free tier, covering reads, adapters, memory, and Drive usage."
+---
+
+This page collects practical advice for running BACLAB effectively within Google Colab's resource constraints. Following these recommendations will help you avoid common pitfalls and get the most out of each session.
+
+## Read type recommendations
+
+<Tip>
+  Paired-end (PE) reads are strongly recommended for best assembly quality. Unicycler with PE reads produces more complete and accurate assemblies than SPAdes running in single-end (SE) mode. If you have the choice of sequencing strategy, use PE.
+</Tip>
+
+## Adapter trimming
+
+Trimmomatic adapter files are taken from the Conda installation and are available automatically after setup. You must choose the correct adapter set for your library preparation chemistry — using the wrong set may leave adapter sequences in the trimmed reads, which can reduce assembly quality.
+
+Common adapter file options:
+
+- **Nextera:** `NexteraPE-PE.fa`
+- **TruSeq paired-end:** `TruSeq3-PE-2.fa`
+- **TruSeq single-end:** `TruSeq3-SE.fa`
+
+If you are unsure which adapters were used, check your sequencing provider's documentation or library prep kit.
+
+## Memory and thread management
+
+Colab's free tier provides approximately 12 GB of RAM. Assembly is the most memory-intensive step in the pipeline, and exceeding available memory will cause the session to crash.
+
+- Reduce `THREADS_ASSEMBLY` if the session crashes during assembly. Values of `2` to `4` threads are a safe starting point.
+- Run fewer samples per session if memory is tight — the pipeline supports batched runs, so you can split a large sample set across multiple sessions.
+- Consider upgrading to **Colab Pro** or **Colab Pro+** for significantly more RAM and longer session times, which makes larger runs much more practical.
+
+## Google Drive for persistence
+
+Colab session storage is temporary. Any files written to `/content/` (outside of Drive) will be lost when the session ends or disconnects. For databases and large datasets, mount Google Drive and direct the pipeline to store and read files from there.
+
+Mount Drive and configure paths at the start of your session:
+
+```python
+from google.colab import drive
+drive.mount('/content/drive')
+DB_ROOT = "/content/drive/MyDrive/baclab_databases"
+DATA_DIR = "/content/drive/MyDrive/wgs_data"
+```
+
+This ensures databases downloaded once are reused across sessions, and that your input FASTQs remain accessible.
+
+## Large datasets
+
+<Warning>
+  Running many samples or assembling large genomes may exceed Colab session storage limits. Keep your FASTQs on Google Drive rather than uploading them to local session storage. If you need to preserve results, copy them to Drive before the session ends using `shutil.copytree` — anything left in `/content/` will be lost on disconnect.
+</Warning>
+
+## Acknowledgements
+
+BACLAB is built on the following open-source tools and databases:
+
+- **Trimmomatic** — read trimming and adapter removal
+- **FastQC** — per-sample FASTQ quality control
+- **MultiQC** — aggregated QC report across all samples
+- **Unicycler** — paired-end bacterial assembly
+- **SPAdes** — single-end assembly and Unicycler backend
+- **CGE database repositories** — ResFinder, MLST, PointFinder, PlasmidFinder, and VirulenceFinder for downstream genomic analysis

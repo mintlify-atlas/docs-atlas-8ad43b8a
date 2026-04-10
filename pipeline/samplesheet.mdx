@@ -1,0 +1,43 @@
+---
+title: "Samplesheet format for BACLAB batch processing"
+description: "The BACLAB samplesheet is a CSV or TSV file with required columns for sample name, read type, and FASTQ paths used to drive multi-sample batch pipeline runs."
+---
+
+The samplesheet is a CSV or TSV file that tells BACLAB which samples to process and where their FASTQ files are located. Use it whenever you need to run multiple samples in a single session with `MODE = "SAMPLESHEET"`.
+
+## Required columns
+
+Each row in the samplesheet represents one sample. The following columns are required:
+
+| Column | Description |
+|--------|-------------|
+| `sample` | Unique name for the sample. Used to label output files and directories. |
+| `read_type` | `PE` for paired-end reads, or `SE` for single-end reads. |
+| `r1` | Path to the R1 FASTQ for PE samples, or the single FASTQ for SE samples. The `se` column can be used as an alternative for SE reads. |
+| `r2` | Path to the R2 FASTQ for PE samples only. Leave this column empty for SE samples. |
+
+<Note>
+  Column names are case-insensitive. You can use `Sample`, `Read_Type`, `R1`, and `R2` interchangeably with their lowercase equivalents.
+</Note>
+
+## Example samplesheet
+
+The following example shows two paired-end samples and one single-end sample in a single samplesheet:
+
+```csv
+sample,read_type,r1,r2
+EC001,PE,EC001_R1_001.fastq.gz,EC001_R2_001.fastq.gz
+EC002,PE,EC002_R1_001.fastq.gz,EC002_R2_001.fastq.gz
+EC003,SE,EC003.fastq.gz,
+```
+
+## File path resolution
+
+Filenames in the `r1` and `r2` columns can be specified as either relative paths or absolute paths:
+
+- **Relative paths** are resolved against `DATA_DIR` at runtime. For example, `EC001_R1_001.fastq.gz` resolves to `DATA_DIR/EC001_R1_001.fastq.gz`.
+- **Absolute paths** are used as-is, regardless of `DATA_DIR`.
+
+<Tip>
+  Use relative paths whenever possible. They make your samplesheet portable across different machines and Google Drive locations — you only need to update `DATA_DIR` rather than every path in the file.
+</Tip>

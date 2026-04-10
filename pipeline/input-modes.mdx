@@ -1,0 +1,42 @@
+---
+title: "Configure BACLAB input: single sample or batch"
+description: "BACLAB supports two input modes — SINGLE_SAMPLE for one-off runs and SAMPLESHEET for batch processing — configured at the top of the Colab notebook."
+---
+
+BACLAB supports two input modes that you configure at the top of the notebook before running the pipeline. Use `SINGLE_SAMPLE` when you have one sample to process, or `SAMPLESHEET` when you need to run multiple samples in a single session.
+
+<Tabs>
+  <Tab title="Single Sample">
+    Set `MODE = "SINGLE_SAMPLE"` in the notebook configuration section. Then provide the path(s) to your FASTQ file(s):
+
+    - **Paired-end reads:** set both `R1_PATH` (read 1) and `R2_PATH` (read 2) to the full paths of your FASTQ files.
+    - **Single-end reads:** set `SE_PATH` to the path of your single FASTQ file. Leave `R1_PATH` and `R2_PATH` unset or commented out.
+
+    ```python
+    MODE = "SINGLE_SAMPLE"
+    # Paired-end
+    R1_PATH = "/content/drive/MyDrive/data/EC001_R1.fastq.gz"
+    R2_PATH = "/content/drive/MyDrive/data/EC001_R2.fastq.gz"
+    # Single-end (use instead of PE paths)
+    # SE_PATH = "/content/drive/MyDrive/data/EC003.fastq.gz"
+    ```
+  </Tab>
+  <Tab title="Batch (Samplesheet)">
+    Set `MODE = "SAMPLESHEET"` in the notebook configuration section. Then provide the folder containing your FASTQs and the path to your samplesheet:
+
+    - **`DATA_DIR`:** the folder where your FASTQ files are stored.
+    - **`SAMPLESHEET_PATH`:** the path to your CSV or TSV samplesheet.
+
+    ```python
+    MODE = "SAMPLESHEET"
+    DATA_DIR = "/content/drive/MyDrive/data/"
+    SAMPLESHEET_PATH = "/content/drive/MyDrive/samplesheet.csv"
+    ```
+
+    Filenames listed in the samplesheet can be relative to `DATA_DIR` (recommended) or absolute paths. See [samplesheet format](/pipeline/samplesheet) for column requirements and examples.
+  </Tab>
+</Tabs>
+
+<Warning>
+  Only one mode can be active at a time. Ensure `MODE` is set to either `"SINGLE_SAMPLE"` or `"SAMPLESHEET"` — not both — before running any pipeline cells.
+</Warning>

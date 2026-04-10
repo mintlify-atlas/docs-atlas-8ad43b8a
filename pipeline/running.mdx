@@ -1,0 +1,75 @@
+---
+title: "Run the BACLAB pipeline from setup to export"
+description: "Execute BACLAB by running each notebook section in order: environment setup, database download, input configuration, trimming, QC, assembly, and ZIP export."
+---
+
+BACLAB is structured as a sequential Colab notebook. Each section must be run in order — later cells depend on outputs from earlier ones. Work through the steps below from top to bottom in the notebook.
+
+<Steps>
+  <Step title="Install Conda and environment">
+    Run the first notebook section to install Mamba/Conda and create the `baclab_wgs` Conda environment with all required tools. This step takes approximately 5–10 minutes on first run.
+
+    After installation completes, the Colab runtime may prompt you to restart the kernel — accept the restart and then continue running subsequent cells. You do not need to re-run the installation section after restarting.
+  </Step>
+  <Step title="(Optional) Download databases">
+    If you need CGE databases for downstream analysis (ResFinder, MLST, and others), set `RUN_DB_DOWNLOAD = True` and run the database download section. By default this flag is `False` and no databases are downloaded.
+
+    See [databases overview](/databases/overview) for details on which databases are available and how to configure storage.
+  </Step>
+  <Step title="Configure input">
+    Set your input mode and file paths at the top of the pipeline configuration section:
+
+    - Set `MODE` to `"SINGLE_SAMPLE"` or `"SAMPLESHEET"`.
+    - Provide the relevant file paths (`R1_PATH`/`R2_PATH`, `SE_PATH`, `DATA_DIR`, or `SAMPLESHEET_PATH`).
+    - Set `THREADS_ASSEMBLY` to control CPU usage during assembly.
+
+    See [configure input](/pipeline/input-modes) for full details on each mode.
+  </Step>
+  <Step title="Run Trimmomatic">
+    Execute the trimming cell. Trimmomatic processes each sample, removing adapters and low-quality bases. Progress and any warnings are logged to `/content/bacterial_pipeline_run/logs/`.
+  </Step>
+  <Step title="Run FastQC and MultiQC">
+    Execute the QC cell. FastQC generates per-sample quality reports, then MultiQC aggregates them into a single `multiqc_report.html`. All outputs are written to `/content/bacterial_pipeline_run/qc/`.
+  </Step>
+  <Step title="Run assembly">
+    Execute the assembly cell. BACLAB automatically selects the assembler based on read type:
+
+    - **PE samples** are assembled with Unicycler (SPAdes backend).
+    - **SE samples** are assembled with SPAdes using `--careful`.
+
+    Final assemblies are saved as `SAMPLE.fasta` in `/content/bacterial_pipeline_run/assembled_files/`.
+  </Step>
+  <Step title="Download ZIP">
+    Run the final cell to package all results — trimmed reads, QC reports, assemblies, and logs — into a timestamped ZIP archive (`baclab_bacterial_pipeline_results_<timestamp>.zip`). The notebook triggers an automatic browser download.
+  </Step>
+</Steps>
+
+## Configuration parameters
+
+<ParamField path="MODE" type="string" required>
+  Input mode for the pipeline. Must be `"SINGLE_SAMPLE"` to process one sample by providing explicit file paths, or `"SAMPLESHEET"` to process multiple samples from a CSV/TSV file.
+</ParamField>
+
+<ParamField path="THREADS_ASSEMBLY" type="integer">
+  Number of CPU threads allocated to the assembly step (Unicycler or SPAdes). Reduce this value if the Colab session runs out of memory or crashes during assembly.
+</ParamField>
+
+<ParamField path="R1_PATH" type="string">
+  Full path to the R1 (read 1) FASTQ file. Used in `SINGLE_SAMPLE` mode with paired-end reads. Accepts `.fastq` or `.fastq.gz` files.
+</ParamField>
+
+<ParamField path="R2_PATH" type="string">
+  Full path to the R2 (read 2) FASTQ file. Used in `SINGLE_SAMPLE` mode with paired-end reads alongside `R1_PATH`.
+</ParamField>
+
+<ParamField path="SE_PATH" type="string">
+  Full path to the single FASTQ file. Used in `SINGLE_SAMPLE` mode with single-end reads. Set this instead of `R1_PATH` and `R2_PATH`.
+</ParamField>
+
+<ParamField path="DATA_DIR" type="string">
+  Path to the folder containing your FASTQ files. Used in `SAMPLESHEET` mode. Relative paths in the samplesheet are resolved against this directory.
+</ParamField>
+
+<ParamField path="SAMPLESHEET_PATH" type="string">
+  Path to the CSV or TSV samplesheet file. Used in `SAMPLESHEET` mode. See [samplesheet format](/pipeline/samplesheet) for required columns and examples.
+</ParamField>

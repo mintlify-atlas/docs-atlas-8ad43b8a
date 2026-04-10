@@ -1,0 +1,60 @@
+---
+title: "What is BACLAB? Automated Bacterial WGS on Google Colab"
+description: "BACLAB is a Google Colab bacterial WGS pipeline that automates read trimming, quality control, and de novo genome assembly — no local install required."
+---
+
+BACLAB is a reproducible bacterial whole genome sequencing (WGS) pipeline packaged as a Google Colab notebook. You upload your raw FASTQ files, configure a few variables, and BACLAB handles trimming, quality control, and assembly automatically — outputting a timestamped ZIP archive of all results. Because it runs in Colab, there is nothing to install on your local machine.
+
+## What BACLAB does
+
+BACLAB runs three sequential stages, each handled by a dedicated bioinformatics tool:
+
+**Stage 1 — Trimming (Trimmomatic)**  
+Raw FASTQ reads are quality-trimmed and adapter-clipped. For paired-end (PE) samples, Trimmomatic produces paired and unpaired outputs. For single-end (SE) samples, it produces a single trimmed file.
+
+**Stage 2 — Quality control (FastQC / MultiQC)**  
+FastQC generates a per-sample QC report for each trimmed FASTQ. MultiQC then aggregates all individual reports into a single interactive HTML summary (`multiqc_report.html`), making it easy to spot quality issues across many samples at once.
+
+**Stage 3 — De novo assembly**  
+PE samples are assembled with **Unicycler**, which uses SPAdes as its backend and is optimised for short-read bacterial assemblies. SE samples are assembled directly with **SPAdes** using the `--careful` flag to reduce mismatches. Final assemblies are saved as `SAMPLE.fasta` under `assembled_files/`.
+
+## Tools installed
+
+BACLAB creates a Conda environment named `baclab_wgs` containing the following packages:
+
+| Package | Role |
+|---|---|
+| `trimmomatic` | Read trimming and adapter clipping |
+| `fastqc` | Per-sample QC reports for FASTQ files |
+| `multiqc` | Aggregates FastQC reports into one HTML summary |
+| `unicycler` | Paired-end de novo assembly |
+| `spades` | Single-end assembly and Unicycler backend |
+| `openjdk` | Java runtime required by Trimmomatic |
+| `pandas` | Samplesheet parsing (CSV/TSV) |
+
+## Key features
+
+<CardGroup cols={2}>
+  <Card title="No local install needed" icon="cloud">
+    The entire pipeline runs in Google Colab. Open the notebook in your browser and run — no software to install or configure on your machine.
+  </Card>
+  <Card title="Supports PE and SE reads" icon="dna">
+    BACLAB handles both paired-end and single-end FASTQ inputs, routing each to the appropriate trimming and assembly workflow automatically.
+  </Card>
+  <Card title="Batch samplesheet mode" icon="table">
+    Process multiple samples in a single run by providing a CSV or TSV samplesheet alongside a folder of FASTQ files. Mix PE and SE samples in the same sheet.
+  </Card>
+  <Card title="LIGHT database downloader" icon="database">
+    An optional cell downloads small, commonly used CGE databases (ResFinder, MLST) for downstream analysis. Larger databases like PlasmidFinder and VirulenceFinder can be enabled individually.
+  </Card>
+  <Card title="Exports a ZIP archive" icon="file-zipper">
+    All trimmed reads, QC reports, assemblies, and per-sample logs are packaged into a single timestamped ZIP and downloaded automatically at the end of the run.
+  </Card>
+  <Card title="Google Drive persistence" icon="hard-drive">
+    Mount Google Drive to store databases and large data across sessions, avoiding the storage limits of Colab's ephemeral `/content` filesystem.
+  </Card>
+</CardGroup>
+
+<Note>
+  BACLAB is designed to run within Google Colab's free-tier resource limits. For large datasets or many samples in a single session, mounting Google Drive is strongly recommended to avoid storage and memory constraints.
+</Note>

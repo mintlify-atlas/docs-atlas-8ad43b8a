@@ -1,0 +1,68 @@
+---
+title: "Troubleshoot common BACLAB errors and failures"
+description: "Resolve the most common BACLAB issues, including no samples detected, file not found errors, and assembler failures in Google Colab."
+---
+
+This page covers the most common errors encountered when running the BACLAB pipeline and explains how to resolve each one. Work through the relevant section below before reaching out for further support.
+
+<AccordionGroup>
+  <Accordion title="No samples detected">
+    The pipeline could not find any samples to process. Check the following:
+
+    - Ensure `MODE` is set to either `SINGLE_SAMPLE` or `SAMPLESHEET` — no other value is valid.
+    - **For `SINGLE_SAMPLE` mode:** confirm that `R1_PATH` and `R2_PATH` (for paired-end) or `SE_PATH` (for single-end) are set and point to files that actually exist.
+    - **For `SAMPLESHEET` mode:** confirm that both `DATA_DIR` (the folder containing your FASTQs) and `SAMPLESHEET_PATH` (the path to your CSV or TSV file) are correct.
+    - Verify that your samplesheet contains the required columns: `sample`, `read_type`, `r1`, and `r2`. Column names are case-insensitive, but they must all be present.
+  </Accordion>
+
+  <Accordion title="File not found for a sample">
+    The pipeline found a sample entry in the samplesheet but could not locate the corresponding FASTQ file. Check the following:
+
+    - Confirm that `DATA_DIR` points to the correct folder that contains your FASTQ files.
+    - Ensure the filenames listed in the samplesheet match the actual filenames exactly — matching is case-sensitive.
+    - If relative paths are not resolving correctly, switch to absolute paths in the samplesheet.
+    - Verify that the files exist by running the following in a Colab cell:
+
+    ```bash
+    !ls /content/path/to/data
+    ```
+  </Accordion>
+
+  <Accordion title="Unicycler / SPAdes assembly fails">
+    Assembly failures are most often caused by resource exhaustion or corrupted input files. Try the following:
+
+    - Reduce `THREADS_ASSEMBLY` to a lower value — try `2` or `4` to limit memory and CPU pressure.
+    - Run fewer samples per session. Processing a smaller batch reduces peak memory usage.
+    - Confirm that your input FASTQs are not corrupted by running an integrity check in a Colab cell:
+
+    ```bash
+    !gzip -t /content/path/to/file.fastq.gz
+    ```
+
+    - Check the assembly log files for detailed error output:
+
+    ```
+    /content/bacterial_pipeline_run/logs/
+    ```
+  </Accordion>
+
+  <Accordion title="Conda installation fails or runtime crashes">
+    Conda setup issues are usually caused by skipping the runtime restart step. Try the following:
+
+    - If Colab shows a prompt asking you to restart the runtime after the install cell, accept it.
+    - After the restart, re-run the installation cell from the beginning.
+    - If the problem persists, reset to a clean state by going to **Runtime → Factory reset runtime**, then re-run all cells from the start.
+  </Accordion>
+
+  <Accordion title="Google Drive not accessible">
+    Drive paths will fail if the Drive is not mounted or the path is incorrect. Check the following:
+
+    - Run the Drive mount cell **before** accessing any paths under `/content/drive/`. Skipping this step is the most common cause of Drive-related errors.
+    - Confirm the Drive path you are using exists and is spelled correctly, including correct casing.
+    - Ensure that `DB_ROOT` and any data paths point into `/content/drive/MyDrive/` rather than a local Colab path.
+  </Accordion>
+</AccordionGroup>
+
+<Note>
+  Per-sample log files are written to `/content/bacterial_pipeline_run/logs/` for every trimming and assembly step. These logs contain the full tool output and are the best place to start when diagnosing a failure that is not covered above.
+</Note>

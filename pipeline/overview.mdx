@@ -1,0 +1,50 @@
+---
+title: "BACLAB pipeline overview: trimming, QC, assembly"
+description: "BACLAB runs a three-stage WGS pipeline — Trimmomatic, FastQC/MultiQC, and Unicycler or SPAdes — inside a reproducible Conda environment on Google Colab."
+---
+
+BACLAB automates bacterial whole genome sequencing analysis end-to-end inside a Google Colab notebook. Raw FASTQ files flow through read trimming, quality control, and genome assembly in sequence, with all outputs collected under a single results directory for easy export.
+
+<Steps>
+  <Step title="Trimming (Trimmomatic)">
+    Trimmomatic removes low-quality bases and adapter sequences before assembly. The adapter set is taken from the Conda installation — choose the correct set for your library prep (Nextera vs TruSeq).
+
+    - **Paired-end (PE):** produces four output files per sample — paired R1, paired R2, unpaired R1, and unpaired R2 FASTQs. Only the paired outputs are passed to assembly.
+    - **Single-end (SE):** produces a single trimmed FASTQ per sample.
+
+    Trimmed files are written to `/content/bacterial_pipeline_run/trimmed/`.
+  </Step>
+  <Step title="Quality control (FastQC + MultiQC)">
+    FastQC runs independently on each trimmed sample to generate per-read quality metrics. MultiQC then aggregates all FastQC reports into a single `multiqc_report.html` for convenient review.
+
+    All QC outputs are written to `/content/bacterial_pipeline_run/qc/`.
+  </Step>
+  <Step title="Assembly">
+    Genome assembly runs automatically based on read type:
+
+    - **PE samples:** assembled with Unicycler using its SPAdes backend, optimised for short-read circular assembly.
+    - **SE samples:** assembled with SPAdes using the `--careful` flag to reduce mismatches and short indels.
+
+    Final assemblies are saved as `SAMPLE.fasta` under `/content/bacterial_pipeline_run/assembled_files/`. Full assembler output (logs, intermediate graphs) is retained in `/content/bacterial_pipeline_run/assembly_runs/`.
+  </Step>
+</Steps>
+
+## Environment
+
+BACLAB installs a Conda environment named `baclab_wgs` inside the Colab runtime during the first notebook section. All pipeline tools are pinned inside this environment to ensure reproducibility across sessions.
+
+The environment includes:
+
+| Tool | Purpose |
+|------|---------|
+| `trimmomatic` | Read trimming and adapter removal |
+| `fastqc` | Per-sample FASTQ quality metrics |
+| `multiqc` | Aggregated QC report |
+| `unicycler` | Paired-end assembly (SPAdes backend) |
+| `spades` | Single-end assembly and Unicycler backend |
+| `openjdk` | Required runtime dependency for Trimmomatic |
+| `pandas` | Samplesheet parsing |
+
+<Note>
+  Paired-end (PE) mode is recommended for best assembly quality. Unicycler is optimised for PE short reads and typically produces more complete, accurate assemblies than SPAdes in single-end mode.
+</Note>

@@ -1,80 +1,102 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: "Get started with BACLAB: Run your first WGS analysis"
+description: "Learn how to open the BACLAB Colab notebook, install dependencies, configure your inputs, and run your first bacterial WGS analysis end to end."
 ---
 
-## Get started in three steps
+This guide walks you through opening the BACLAB notebook in Google Colab, installing all required tools, configuring your input data, and running the full trimming → QC → assembly pipeline. By the end you will have a ZIP archive of assembled genomes and QC reports ready to download.
 
-Get your documentation site running locally and make your first customization.
+<Steps>
+  <Step title="Open the notebook">
+    Open the BACLAB notebook in Google Colab:
 
-### Step 1: Set up your local environment
+    [https://colab.research.google.com/drive/1MC1bg80356yF6ivsmNk4wxjYUu7elNRh?usp=sharing](https://colab.research.google.com/drive/1MC1bg80356yF6ivsmNk4wxjYUu7elNRh?usp=sharing)
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
+    Sign in with your Google account if prompted, then click **Copy to Drive** to save your own editable copy before making any changes.
+  </Step>
 
-### Step 2: Deploy your changes
+  <Step title="Run the installation cells">
+    The first cells in the notebook install Conda (via Miniforge) and create the `baclab_wgs` environment with all required tools:
 
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+    ```text
+    trimmomatic  fastqc  multiqc  unicycler  spades  openjdk  pandas
+    ```
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+    Run these cells in order and wait for them to complete. On a fresh Colab session this typically takes **3–5 minutes**. You only need to repeat this step if your runtime is recycled.
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+    <Tip>
+      If you see a prompt asking to restart the runtime after installation, click **Restart** and then continue running the cells below the installation section.
+    </Tip>
+  </Step>
 
-### Step 3: Go live
+  <Step title="(Optional) Mount Google Drive">
+    Colab's `/content` filesystem is ephemeral — it is wiped when the session ends. Mounting Google Drive gives your databases and output files persistence across sessions.
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+    Run the Drive mount cell and, when prompted, authorise access. Then set `DB_ROOT` to a path inside your Drive:
 
-## Next steps
+    ```python
+    DB_ROOT = "/content/drive/MyDrive/baclab_databases"
+    ```
 
-Now that you have your docs running, explore these key features:
+    This ensures downloaded databases (ResFinder, MLST, etc.) are not lost between sessions.
+  </Step>
 
-<CardGroup cols={2}>
+  <Step title="Configure your input mode">
+    BACLAB supports two input modes. Set the `MODE` variable to one of the following:
 
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
+    **`SINGLE_SAMPLE`** — run one sample by providing explicit FASTQ paths:
 
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
+    ```python
+    MODE = "SINGLE_SAMPLE"
 
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
+    # Paired-end
+    R1_PATH = "/content/sample_R1.fastq.gz"
+    R2_PATH = "/content/sample_R2.fastq.gz"
 
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
+    # Single-end (use instead of R1/R2)
+    # SE_PATH = "/content/sample.fastq.gz"
+    ```
 
-</CardGroup>
+    **`SAMPLESHEET`** — run multiple samples in batch by pointing to a folder of FASTQs and a CSV/TSV samplesheet:
+
+    ```python
+    MODE = "SAMPLESHEET"
+    DATA_DIR = "/content/drive/MyDrive/my_fastqs"
+    SAMPLESHEET_PATH = "/content/drive/MyDrive/samplesheet.csv"
+    ```
+
+    See [Input modes](/pipeline/input-modes) for samplesheet format details and examples.
+  </Step>
+
+  <Step title="Run the pipeline">
+    With your inputs configured, run the three pipeline cells in order:
+
+    1. **Trimming** — Trimmomatic clips adapters and removes low-quality bases from all samples.
+    2. **FastQC / MultiQC** — FastQC generates per-sample reports; MultiQC summarises them into `multiqc_report.html`.
+    3. **Assembly** — Unicycler assembles PE samples; SPAdes (`--careful`) assembles SE samples.
+
+    Each cell prints progress logs as it runs. Assembly is the most resource-intensive step — runtime depends on genome size and the number of samples.
+  </Step>
+
+  <Step title="Download your results">
+    After assembly completes, the final cell packages everything into a ZIP and triggers an automatic browser download:
+
+    ```text
+    baclab_bacterial_pipeline_results_<timestamp>.zip
+    ```
+
+    The archive contains trimmed FASTQs, QC reports, assembled FASTA files, and per-sample logs. See [Output structure](/output/structure) for a full breakdown of the directory layout inside the ZIP.
+  </Step>
+</Steps>
 
 <Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
+  Colab's free tier has memory and storage limits that can cause sessions to crash during large assemblies. If your session crashes mid-run, reduce `THREADS_ASSEMBLY`, run fewer samples at a time, or upgrade to Colab Pro for more resources. See [Tips and notes](/tips-and-notes) for more guidance.
 </Note>
+
+<CardGroup cols={2}>
+  <Card title="Input modes" icon="file-import" href="/pipeline/input-modes">
+    Learn how to configure single-sample and batch samplesheet mode, including the required samplesheet columns and CSV format.
+  </Card>
+  <Card title="Output structure" icon="folder-open" href="/output/structure">
+    Explore the output directory layout — trimmed reads, QC reports, assemblies, logs, and the final ZIP archive.
+  </Card>
+</CardGroup>

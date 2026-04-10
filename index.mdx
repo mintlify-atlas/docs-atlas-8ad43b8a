@@ -1,97 +1,50 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "BACLAB: Bacterial WGS Pipeline for Google Colab"
+description: "BACLAB is a reproducible bacterial whole genome sequencing pipeline that runs entirely in Google Colab — no local installation required."
 ---
 
-## Setting up
+BACLAB is a ready-to-run bacterial whole genome sequencing (WGS) pipeline hosted as a Google Colab notebook. It takes raw FASTQ files and automatically performs read trimming, quality control, and de novo genome assembly — packaging all results into a downloadable ZIP archive.
 
-Get your documentation site up and running in minutes.
-
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
-
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+<CardGroup cols={2}>
+  <Card title="Introduction" icon="dna" href="/introduction">
+    Learn what BACLAB is, what tools it uses, and what it produces.
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Open the notebook and run your first bacterial WGS analysis in minutes.
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+  <Card title="Pipeline Guide" icon="diagram-project" href="/pipeline/overview">
+    Understand each step: trimming, QC, and assembly for PE and SE reads.
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+  <Card title="Input Modes" icon="file-import" href="/pipeline/input-modes">
+    Configure single-sample or batch samplesheet mode.
   </Card>
-</Columns>
+  <Card title="Databases" icon="database" href="/databases/overview">
+    Set up ResFinder, MLST, and other CGE databases for downstream analysis.
+  </Card>
+  <Card title="Output & Results" icon="folder-open" href="/output/structure">
+    Explore the output directory layout and understand each result file.
+  </Card>
+</CardGroup>
 
-## Create beautiful pages
+## How it works
 
-Everything you need to create world-class documentation.
+BACLAB runs a three-stage pipeline inside a managed Conda environment:
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+<Steps>
+  <Step title="Trim reads with Trimmomatic">
+    Raw FASTQ files are quality-trimmed and adapter-clipped. Paired-end (PE) runs produce paired and unpaired outputs; single-end (SE) runs produce a single trimmed file.
+  </Step>
+  <Step title="Quality control with FastQC and MultiQC">
+    FastQC generates per-sample QC reports. MultiQC aggregates them into a single interactive HTML summary (`multiqc_report.html`).
+  </Step>
+  <Step title="De novo assembly">
+    PE samples are assembled with **Unicycler** (SPAdes backend). SE samples are assembled with **SPAdes** using the `--careful` flag. Final assemblies are saved as `SAMPLE.fasta`.
+  </Step>
+  <Step title="Download your results">
+    All trimmed reads, QC reports, assemblies, and logs are packaged into a timestamped ZIP and downloaded automatically.
+  </Step>
+</Steps>
 
-## Need inspiration?
-
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+<Note>
+  BACLAB is designed to work within Google Colab's free-tier resource limits. For large datasets or many samples, mount Google Drive as your data source to avoid session storage limits.
+</Note>

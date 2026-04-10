@@ -1,0 +1,70 @@
+---
+title: "BACLAB output directory structure and result files"
+description: "BACLAB writes results to organized subdirectories covering trimmed reads, QC reports, assembler output, final FASTA assemblies, and per-sample logs."
+---
+
+BACLAB writes all pipeline outputs to `/content/bacterial_pipeline_run/` inside the Colab runtime. Results are organized into subdirectories, one per pipeline stage, so you can quickly locate trimmed reads, QC reports, assembler output, and final assemblies without sifting through a flat file list.
+
+## Output folders
+
+<ResponseField name="trimmed/" type="directory">
+  Trimmed FASTQ files produced by Trimmomatic. Paired-end (PE) runs produce four files per sample: `_R1_paired`, `_R1_unpaired`, `_R2_paired`, and `_R2_unpaired`. Single-end (SE) runs produce a single trimmed FASTQ per sample.
+</ResponseField>
+
+<ResponseField name="qc/" type="directory">
+  FastQC HTML and ZIP reports for each sample, plus a `multiqc_report.html` that aggregates QC results across all samples into a single interactive report.
+</ResponseField>
+
+<ResponseField name="assembly_runs/" type="directory">
+  Full assembler output per sample. Each sample has its own subdirectory containing every file produced by Unicycler (for PE runs) or SPAdes (for SE runs), including intermediate files.
+</ResponseField>
+
+<ResponseField name="assembled_files/" type="directory">
+  Final genome assemblies, one file per sample named `SAMPLE.fasta`. This is the primary output for downstream analysis tools.
+</ResponseField>
+
+<ResponseField name="logs/" type="directory">
+  Per-sample log files capturing stdout and stderr from the trimming and assembly steps. Useful for diagnosing failures without re-running the pipeline.
+</ResponseField>
+
+```text
+/content/bacterial_pipeline_run/
+├── trimmed/
+│   ├── EC001_R1_paired.fastq.gz
+│   ├── EC001_R1_unpaired.fastq.gz
+│   ├── EC001_R2_paired.fastq.gz
+│   └── EC001_R2_unpaired.fastq.gz
+├── qc/
+│   ├── EC001_fastqc.html
+│   ├── EC001_fastqc.zip
+│   └── multiqc_report.html
+├── assembly_runs/
+│   └── EC001/
+│       └── (full assembler output)
+├── assembled_files/
+│   └── EC001.fasta
+└── logs/
+    ├── EC001_trim.log
+    └── EC001_assembly.log
+```
+
+## Interpreting QC results
+
+The `multiqc_report.html` file in `qc/` is the primary QC entry point. Open it in a browser to review aggregated metrics across all samples. Key sections to check:
+
+- **Per-base sequence quality** — look for quality scores that drop sharply toward the 3′ end; aggressive trimming thresholds may be needed.
+- **Adapter content** — confirm that Trimmomatic removed adapter sequences. Residual adapter content will appear as a spike near the read end.
+- **Sequence duplication levels** — high duplication can indicate low-complexity libraries or over-amplification, which may affect assembly contiguity.
+
+<Tip>
+  Review `multiqc_report.html` before proceeding to downstream analysis. Samples with poor QC metrics are likely to produce fragmented or low-quality assemblies.
+</Tip>
+
+## Assembly outputs
+
+The `assembled_files/` directory contains the final `SAMPLE.fasta` files — one per sample — and is the recommended source for downstream tools such as annotation pipelines, AMR databases, and MLST schemes.
+
+For more detail on a specific assembly, look inside `assembly_runs/SAMPLE/`:
+
+- **Unicycler (PE runs)** produces a polished `assembly.fasta` and an assembly graph file (`assembly.gfa`) that can be visualized in tools such as Bandage to inspect topology and potential misassemblies.
+- **SPAdes (SE runs)** produces `scaffolds.fasta` and `contigs.fasta` alongside graph and coverage files. BACLAB copies the scaffolds to `assembled_files/` as the final FASTA.

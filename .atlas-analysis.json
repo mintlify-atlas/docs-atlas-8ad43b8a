@@ -1,0 +1,78 @@
+{
+  "projectType": "ai-ml",
+  "projectName": "BACLAB",
+  "projectDescription": "A Google Colab-based bacterial whole genome sequencing (WGS) pipeline that automates read trimming, QC, and de novo assembly for paired-end and single-end FASTQ data.",
+  "theme": "almond",
+  "primaryColor": "#bd8236",
+  "lightColor": "#dad2cb",
+  "darkColor": "#fbab04",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Pipeline Guide",
+            "pages": [
+              "pipeline/overview",
+              "pipeline/input-modes",
+              "pipeline/samplesheet",
+              "pipeline/running"
+            ]
+          },
+          {
+            "group": "Databases",
+            "pages": [
+              "databases/overview",
+              "databases/light-databases"
+            ]
+          },
+          {
+            "group": "Output & Results",
+            "pages": [
+              "output/structure",
+              "output/export"
+            ]
+          },
+          {
+            "group": "Help",
+            "pages": [
+              "troubleshooting",
+              "tips-and-notes"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Google Colab notebook — no local installation required",
+    "Supports both paired-end (PE) and single-end (SE) FASTQ inputs",
+    "Automated read trimming with Trimmomatic",
+    "Quality control with FastQC and MultiQC",
+    "De novo assembly via Unicycler (PE) and SPAdes (SE)",
+    "Batch processing with CSV/TSV samplesheets",
+    "Optional LIGHT database downloader for CGE databases (ResFinder, MLST, PlasmidFinder, etc.)",
+    "Exports all results as a timestamped ZIP archive",
+    "Conda/Mamba environment for reproducible installs"
+  ],
+  "publicApiSurface": [
+    "MODE: SINGLE_SAMPLE | SAMPLESHEET — selects input mode",
+    "R1_PATH, R2_PATH — paired-end FASTQ input paths",
+    "SE_PATH — single-end FASTQ input path",
+    "DATA_DIR — directory containing FASTQ files for batch mode",
+    "SAMPLESHEET_PATH — path to CSV/TSV samplesheet",
+    "RUN_DB_DOWNLOAD — boolean flag to trigger database downloads",
+    "DB_ROOT — root path for database storage (Google Drive recommended)",
+    "THREADS_ASSEMBLY — number of threads for assembly step",
+    "baclab_wgs — default conda environment name",
+    "Samplesheet columns: sample, read_type, r1, r2"
+  ]
+}

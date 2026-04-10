@@ -1,0 +1,48 @@
+---
+title: "Download CGE databases for BACLAB analysis"
+description: "BACLAB includes an optional LIGHT database downloader for CGE databases used in AMR detection, MLST typing, plasmid identification, and virulence analysis."
+---
+
+BACLAB includes an optional LIGHT database downloader that fetches databases from the [Center for Genomic Epidemiology (CGE)](https://www.genomicepidemiology.org/) for use in downstream analysis steps. Because Google Colab provides limited persistent storage, only the smallest, most commonly needed databases are downloaded by default. Larger databases are available but must be enabled explicitly.
+
+## Available databases
+
+<CardGroup cols={2}>
+  <Card title="ResFinder" icon="shield-halved">
+    Identifies acquired antimicrobial resistance (AMR) genes in bacterial genomes. Variable name: `resfinder_db`. Downloaded **by default**.
+  </Card>
+  <Card title="MLST" icon="sitemap">
+    Contains Multi-Locus Sequence Typing schemes for common bacterial species. Variable name: `mlst_db`. Downloaded **by default**.
+  </Card>
+  <Card title="PointFinder" icon="circle-dot">
+    Detects chromosomal point mutations associated with AMR. Species-specific; can be larger depending on selected organisms. Variable name: `pointfinder_db`. **Off by default.**
+  </Card>
+  <Card title="PlasmidFinder" icon="circle-nodes">
+    Identifies plasmid replicons in bacterial genomes. Useful for tracking mobile genetic elements. Variable name: `plasmidfinder_db`. **Off by default.**
+  </Card>
+  <Card title="VirulenceFinder" icon="virus">
+    Detects virulence genes. Particularly useful for pathogen characterization. Variable name: `virulencefinder_db`. **Off by default.**
+  </Card>
+</CardGroup>
+
+## Storage location
+
+All databases are stored under the path set in the `DB_ROOT` variable. By default this points to local Colab storage, which is lost when a session ends. To keep databases across sessions, point `DB_ROOT` to a folder in your Google Drive:
+
+```python
+DB_ROOT = "/content/drive/MyDrive/baclab_databases"
+```
+
+<Note>
+  You must mount Google Drive in your Colab notebook before setting `DB_ROOT` to a Drive path. Run the Drive mount cell before the database download cell.
+</Note>
+
+## Enabling download
+
+Database downloads are skipped unless you opt in. To trigger them, set the following variable to `True` in the notebook:
+
+```python
+RUN_DB_DOWNLOAD = True
+```
+
+Once enabled, all databases toggled on in the notebook cell will be cloned to `DB_ROOT`. See [LIGHT database set](/databases/light-databases) for details on each database's content and how to enable the optional ones.

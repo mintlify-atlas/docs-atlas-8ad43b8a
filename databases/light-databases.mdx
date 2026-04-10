@@ -1,0 +1,64 @@
+---
+title: "LIGHT database set: default and optional databases"
+description: "BACLAB downloads ResFinder and MLST by default to conserve Colab storage. PointFinder, PlasmidFinder, and VirulenceFinder are available but off by default."
+---
+
+The LIGHT database set is BACLAB's strategy for managing limited Google Colab storage. By default, only the smallest, most broadly applicable CGE databases are downloaded so the pipeline is ready to run without exhausting session storage. Optional databases are available for broader analysis but must be enabled deliberately before downloading.
+
+## Default databases (ON)
+
+These databases are downloaded whenever `RUN_DB_DOWNLOAD = True` and require no additional configuration.
+
+<AccordionGroup>
+  <Accordion title="ResFinder (resfinder_db)">
+    Identifies acquired antimicrobial resistance (AMR) genes in bacterial genomes. Maintained by the Center for Genomic Epidemiology (CGE). This is a small database well-suited to Colab's storage constraints and is enabled by default for all runs.
+  </Accordion>
+  <Accordion title="MLST (mlst_db)">
+    Contains Multi-Locus Sequence Typing (MLST) schemes for common bacterial species. Used to assign sequence types (STs) to isolates. The database covers a wide range of species and remains small enough to download reliably within a Colab session.
+  </Accordion>
+</AccordionGroup>
+
+## Optional databases (OFF by default)
+
+These databases are not downloaded unless you enable them in the notebook. They are off by default because they can be significantly larger depending on the organisms included.
+
+<AccordionGroup>
+  <Accordion title="PointFinder (pointfinder_db)">
+    Detects chromosomal point mutations associated with antimicrobial resistance. The database is species-specific, meaning its size varies depending on which organisms are selected. For analyses targeting multiple species, this database can become large enough to strain Colab storage.
+  </Accordion>
+  <Accordion title="PlasmidFinder (plasmidfinder_db)">
+    Identifies plasmid replicons in bacterial genomes. Useful for tracking mobile genetic elements and assessing the plasmid content of sequenced isolates. Enable this database when plasmid characterization is part of your analysis.
+  </Accordion>
+  <Accordion title="VirulenceFinder (virulencefinder_db)">
+    Detects virulence genes in bacterial genomes. Particularly useful for pathogen characterization and epidemiological investigations. Enable this database when virulence profiling is required for your isolates.
+  </Accordion>
+</AccordionGroup>
+
+## Enabling optional databases
+
+To download optional databases, open the LIGHT database download cell in the notebook and enable the databases you need by toggling their flags to `True`. Only databases with their toggle set to `True` will be downloaded when `RUN_DB_DOWNLOAD = True`.
+
+```python
+RUN_DB_DOWNLOAD = True
+```
+
+After setting your flags, re-run the database download cell. Databases that are already present in `DB_ROOT` will not be re-downloaded.
+
+<Note>
+  The specific per-database toggle variables are defined inside the notebook's database download cell. Refer to that cell for the exact variable names and their default values.
+</Note>
+
+<Warning>
+  Enabling multiple large optional databases in a single session may exhaust Colab's available storage. If you plan to use several optional databases, set `DB_ROOT` to a Google Drive path so databases persist across sessions and do not need to be re-downloaded each time.
+</Warning>
+
+<Tip>
+  Before downloading any databases, mount Google Drive and set `DB_ROOT` to a Drive folder. This ensures databases survive session restarts and you only need to download them once.
+
+  ```python
+  from google.colab import drive
+  drive.mount("/content/drive")
+
+  DB_ROOT = "/content/drive/MyDrive/baclab_databases"
+  ```
+</Tip>
